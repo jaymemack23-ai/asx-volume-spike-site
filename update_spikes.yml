@@ -1,0 +1,39 @@
+name: Update Spikes JSON
+
+on:
+  push:
+    branches:
+      - main   # or your default branch
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v3
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install pandas yfinance alpha_vantage tqdm requests
+
+    - name: Run scanner script
+      working-directory: ./backend
+      run: |
+        python scanner.py
+
+    - name: Commit and push spikes.json
+      run: |
+        cd frontend/public
+        git config user.name "github-actions[bot]"
+        git config user.email "github-actions[bot]@users.noreply.github.com"
+        git add spikes.json
+        git commit -m "Update spikes.json from GitHub Actions" || echo "No changes to commit"
+        git push
